@@ -98,8 +98,8 @@ JSON Response
 
 ## Project Structure
 
+```text
 support_assistant/
-│
 ├── docs/                       # Zepto support policy documents
 │   ├── doc_01.txt
 │   ├── doc_02.txt
@@ -122,6 +122,7 @@ support_assistant/
 ├── Dockerfile                  # Docker container configuration
 ├── .env                        # Environment variables
 └── README.md                   # Project documentation
+```
 
 # Support Documents
 
@@ -370,7 +371,7 @@ Examples:
 # Streamlit Application Entry Point
 
 The Streamlit application is started using:
-
+SS
 streamlit run app.py
 
 For Docker deployment, the application listens on:
