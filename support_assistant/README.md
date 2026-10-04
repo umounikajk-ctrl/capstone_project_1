@@ -27,54 +27,80 @@ The Support Assistant follows a Retrieval-Augmented Generation (RAG) architectur
 * Support deterministic offline testing using `MOCK_LLM=1`
 * Support optional real LLM usage using `MOCK_LLM=0`
 * Containerize the application using Docker
+* Run the application locally in Docker
+* Deploy the containerized Streamlit application to a Docker-based hosting environment such as Hugging Face Spaces
 
 ## Architecture
 
-```text
-                    User
-                      |
-                      v
-                FastAPI /ask
-                      |
-                      v
-              Query Validation
-                      |
-                      v
-             LangGraph Workflow
-                      |
-              +-------+-------+
-              |               |
-              v               v
-       Classify Intent     General Question
-              |
-              v
-        Policy Question
-              |
-              v
-       Retrieve Documents
-              |
-              v
-            ChromaDB
-              |
-              v
-        Relevant Context
-              |
-              v
-         Generate Answer
-              |
-              v
-       Structured Response
-              |
-              v
-          FastAPI JSON
-```
+The application has two interfaces:
+
+Streamlit UI — user-facing chat application
+
+FastAPI API — programmatic/API access to the support assistant
+
+The Streamlit application directly uses the RAG/LangGraph pipeline.
+
+                         User
+                           |
+                           v
+                 +-------------------+
+                 |   Streamlit UI    |
+                 |      app.py       |
+                 +---------+---------+
+                           |
+                           v
+                  LangGraph Workflow
+                           |
+                 +---------+---------+
+                 |                   |
+                 v                   v
+          Classify Intent      General Question
+                 |
+                 v
+          Policy Question
+                 |
+                 v
+         Retrieve Documents
+                 |
+                 v
+              ChromaDB
+                 |
+                 v
+         Relevant Context
+                 |
+                 v
+           Generate Answer
+                 |
+                 v
+        Structured Response
+                 |
+                 v
+              Streamlit
+
+The same RAG pipeline can also be accessed through FastAPI:
+
+Client
+  |
+  v
+FastAPI /ask
+  |
+  v
+Query Validation
+  |
+  v
+LangGraph Workflow
+  |
+  v
+RAG Pipeline
+  |
+  v
+JSON Response
 
 ## Project Structure
 
 ```text
 support_assistant/
-│
-├── docs/               # Zepto support policy documents 
+├── docs/                       # Zepto support policy documents
 │   ├── doc_01.txt
 │   ├── doc_02.txt
 │   ├── doc_03.txt
@@ -84,17 +110,18 @@ support_assistant/
 │   ├── doc_07.txt
 │   └── doc_08.txt
 │
-├── data/              # Persistent ChromaDB storage 
+├── data/                       # Persistent ChromaDB storage
 │   └── chroma/
 │
-├── ingest.py          # Loads documents, creates embeddings and indexes them
-├── graph.             # LangGraph workflow and RAG logic
-├── prompts.py         # Prompt templates and instructions
-├── main.py            # FastAPI application
-├── requirements.txt   # Python dependencies
-├── Dockerfile         # Docker container configuration
-├── .env               # Environment variables 
-└── README.md          # Project documentation 
+├── ingest.py                   # Loads documents and creates embeddings
+├── graph.py                    # LangGraph workflow and RAG logic
+├── prompts.py                  # Prompt templates and instructions
+├── main.py                     # FastAPI application
+├── app.py                      # Streamlit user interface
+├── requirements.txt            # Python dependencies
+├── Dockerfile                  # Docker container configuration
+├── .env                        # Environment variables
+└── README.md                   # Project documentation
 ```
 
 # Support Documents
@@ -340,6 +367,20 @@ Examples:
             'answer': 'The capital of India is New Delhi. It serves as the seat of the government and is located in the northern part of the country.', 
             'sources': [], 
             'confidence': 1.0}
+
+# Streamlit Application Entry Point
+
+The Streamlit application is started using:
+SS
+streamlit run app.py
+
+For Docker deployment, the application listens on:
+
+0.0.0.0:7860
+
+The Docker container therefore exposes the Streamlit interface through port 7860.
+
+
 # Docker
 
 ### Build the image
@@ -372,64 +413,61 @@ container, mapped to `localhost:7860` on the host.
 
 The complete application can be summarized as:
 
-```text
-                 ┌──────────────────┐
-                 │      User        │
-                 └────────┬─────────┘
-                          │
-                          v
-                 ┌──────────────────┐
-                 │   FastAPI /ask   │
-                 └────────┬─────────┘
-                          │
-                          v
-                 ┌──────────────────┐
-                 │  Query Validation│
-                 └────────┬─────────┘
-                          │
-                          v
-                 ┌──────────────────┐
-                 │ LangGraph Router │
-                 └───────┬──────────┘
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-              v                     v
-       Policy Question        General Question
-              │                     │
-              v                     v
-       ┌──────────────┐      ┌──────────────┐
-       │  Embedding   │      │    Direct    │
-       │    Query     │      │   Response   │
-       └──────┬───────┘      └──────┬───────┘
-              │                     │
-              v                     │
-       ┌──────────────┐             │
-       │   ChromaDB   │             │
-       │   Retrieval  │             │
-       └──────┬───────┘             │
-              │                     │
-              v                     │
-       ┌──────────────┐             │
-       │   Retrieved  │             │
-       │   Context    │             │
-       └──────┬───────┘             │
-              │                     │
-              └──────────┬──────────┘
-                         v
-                ┌──────────────────┐
-                │ Structured Output│
-                │ answer/sources/  │
-                │ confidence       │
-                └────────┬─────────┘
-                         │
-                         v
-                ┌──────────────────┐
-                │   JSON Response  │
-                └──────────────────┘
-```
+                         ┌──────────────────┐
+                         │       User       │
+                         └────────┬─────────┘
+                                  |
+                                  v
+                         ┌──────────────────┐
+                         │  Streamlit UI    │
+                         │     app.py       │
+                         └────────┬─────────┘
+                                  |
+                                  v
+                         ┌──────────────────┐
+                         │ LangGraph Router │
+                         └────────┬─────────┘
+                                  |
+                    ┌─────────────┴─────────────┐
+                    |                           |
+                    v                           v
+             Policy Question             General Question
+                    |                           |
+                    v                           v
+             Query Embedding              Direct Response
+                    |
+                    v
+             ┌──────────────┐
+             │   ChromaDB   │
+             │  Retrieval   │
+             └──────┬───────┘
+                    |
+                    v
+             Retrieved Context
+                    |
+                    v
+             ┌──────────────┐
+             │ MOCK / LLM   │
+             └──────┬───────┘
+                    |
+                    v
+           Structured Response
+                    |
+                    v
+             Streamlit UI
 
----
+The same LangGraph/RAG pipeline can also be accessed through:
+
+Client
+  |
+  v
+FastAPI /ask
+  |
+  v
+LangGraph
+  |
+  v
+Structured JSON
 
 # 29. Conclusion
 
