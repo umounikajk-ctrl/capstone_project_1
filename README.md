@@ -4,7 +4,7 @@ An end-to-end AI/ML engineering capstone project consisting of three connected m
 
 1. **Data Pipeline** - web scraping, data cleaning, currency conversion, and relational storage using SQLite.
 2. **Analytics** - exploratory data analysis, preprocessing, classification, regression, model evaluation, and model persistence using the Titanic dataset.
-3. **Support Assistant** - a grounded GenAI support service using document embeddings, ChromaDB, LangGraph, and FastAPI.
+3. **Support Assistant** - a grounded GenAI support application using document embeddings, ChromaDB, LangGraph, FastAPI, and a Streamlit frontend.
 
 All three modules are maintained in this single repository.
 
@@ -40,10 +40,22 @@ Zepto-data-ai-platform/
     |-- graph.py
     |-- ingest.py
     |-- main.py
+    |-- app.py
     |-- prompts.py
     |-- README.md
     `-- requirements.txt
 ```
+
+### Support Assistant application files
+
+| File | Purpose |
+|---|---|
+| `ingest.py` | Loads documents, creates embeddings, and indexes them in ChromaDB |
+| `graph.py` | Defines the LangGraph workflow and assistant logic |
+| `prompts.py` | Contains prompt templates |
+| `main.py` | FastAPI backend and API endpoint |
+| `app.py` | Streamlit frontend for interacting with the Support Assistant |
+| `Dockerfile` | Container configuration for the application |
 
 Virtual environments (`.venv`), `.env` files, Python cache files, and other local/generated files are excluded from Git using `.gitignore`.
 
@@ -55,10 +67,11 @@ Virtual environments (`.venv`), `.env` files, Python cache files, and other loca
 
 The project requires:
 
-* Python 3.11 or compatible Python 3 version
-* Git
-* VS Code or another Python development environment
-* Docker Desktop for the containerized Support Assistant workflow
+- Python 3.11 or compatible Python 3 version
+- Git
+- VS Code or another Python development environment
+- Docker Desktop for the containerized Support Assistant workflow
+- Streamlit for the Support Assistant web interface
 
 Each module contains its own `requirements.txt` because the modules have different dependencies.
 
@@ -68,7 +81,9 @@ This project uses one `requirements.txt` per module:
 
 ```text
 data_pipeline/requirements.txt
+
 analytics/requirements.txt
+
 support_assistant/requirements.txt
 ```
 
@@ -84,11 +99,11 @@ The Data Pipeline module collects book information from `books.toscrape.com`, pr
 
 ## Main technologies
 
-* Python
-* Requests
-* BeautifulSoup
-* SQLite
-* Pandas
+- Python
+- Requests
+- BeautifulSoup
+- SQLite
+- Pandas
 
 ## Setup
 
@@ -169,28 +184,28 @@ The Analytics module demonstrates an end-to-end machine-learning workflow using 
 
 The workflow includes:
 
-* Data loading
-* Data profiling
-* Missing-value analysis
-* Data cleaning
-* Exploratory data analysis
-* Feature preparation
-* Classification
-* Imbalanced-data handling
-* Hyperparameter tuning
-* Model evaluation
-* Regression
-* Model persistence
+- Data loading
+- Data profiling
+- Missing-value analysis
+- Data cleaning
+- Exploratory data analysis
+- Feature preparation
+- Classification
+- Imbalanced-data handling
+- Hyperparameter tuning
+- Model evaluation
+- Regression
+- Model persistence
 
 ## Main technologies
 
-* Python
-* Pandas
-* NumPy
-* Matplotlib
-* Seaborn
-* Scikit-learn
-* Jupyter Notebook
+- Python
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
+- Scikit-learn
+- Jupyter Notebook
 
 ## Setup
 
@@ -253,17 +268,17 @@ Missing values were handled using appropriate preprocessing decisions. Highly in
 
 Several classification algorithms were evaluated, including:
 
-* Logistic Regression
-* Decision Tree
-* Random Forest
+- Logistic Regression
+- Decision Tree
+- Random Forest
 
 Model performance was evaluated using metrics such as:
 
-* Accuracy
-* Precision
-* Recall
-* F1-score
-* ROC-AUC
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- ROC-AUC
 
 Class imbalance was also investigated using techniques such as class weighting and SMOTE.
 
@@ -271,10 +286,10 @@ Hyperparameter search was performed using cross-validation techniques where appl
 
 A regression workflow was also included to demonstrate regression metrics such as:
 
-* MAE
-* RMSE
-* RÂ²
-* Adjusted RÂ²
+- MAE
+- RMSE
+- R²
+- Adjusted R²
 
 The final trained pipeline is persisted using `joblib`.
 
@@ -284,20 +299,28 @@ The final trained pipeline is persisted using `joblib`.
 
 ## Objective
 
-The Support Assistant is a small GenAI service that answers Zepto policy-related questions using the provided document corpus.
+The Support Assistant is a small GenAI application that answers Zepto policy-related questions using the provided document corpus.
 
 The application uses retrieval-augmented generation concepts so that answers can be grounded in the supplied policy documents.
 
+The Support Assistant provides:
+
+- A **FastAPI backend** for API-based interaction
+- A **Streamlit frontend** for an interactive web interface
+- A **LangGraph workflow** for intent classification and response generation
+- **ChromaDB** for vector storage and document retrieval
+
 ## Main technologies
 
-* Python
-* FastAPI
-* LangGraph
-* LangChain
-* ChromaDB
-* Sentence Transformers
-* OpenAI-compatible API
-* Docker
+- Python
+- FastAPI
+- Streamlit
+- LangGraph
+- LangChain
+- ChromaDB
+- Sentence Transformers
+- OpenAI-compatible API
+- Docker
 
 ## Project Components
 
@@ -317,11 +340,49 @@ prompts.py
     Prompt templates
 
 main.py
-    FastAPI application
+    FastAPI backend application
+
+app.py
+    Streamlit frontend application
 
 Dockerfile
     Container configuration
 ```
+
+### Application architecture
+
+The Support Assistant can be accessed in two ways:
+
+```text
+                    User
+                     |
+          +----------+----------+
+          |                     |
+          v                     v
+   Streamlit UI            FastAPI API
+     app.py                  main.py
+          |                     |
+          +----------+----------+
+                     |
+                     v
+                graph.py
+               LangGraph
+                     |
+          +----------+----------+
+          |                     |
+          v                     v
+   Policy Retrieval       Direct Answer
+          |
+          v
+       ChromaDB
+          |
+          v
+   Policy Documents
+```
+
+The Streamlit application provides the user-facing interface, while FastAPI provides the backend API endpoint.
+
+---
 
 ## Setup
 
@@ -349,7 +410,9 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-## Offline Mock Mode
+---
+
+# 5. Offline Mock Mode
 
 The application supports an offline mock mode for deterministic evaluation.
 
@@ -363,7 +426,9 @@ or leave `MOCK_LLM` unset if the application is configured to use mock mode by d
 
 This mode does not require a paid external LLM service.
 
-## Optional Real LLM Mode
+---
+
+# 6. Optional Real LLM Mode
 
 For optional real LLM execution, configure the required API key in the local `.env` file.
 
@@ -378,7 +443,7 @@ The `.env` file must not be committed to GitHub.
 
 ---
 
-## Run the Support Assistant Locally
+# 7. Run the Support Assistant Backend
 
 Start the FastAPI application:
 
@@ -406,7 +471,57 @@ http://localhost:7860/redoc
 
 ---
 
-## Test the API
+# 8. Run the Streamlit Frontend
+
+The Support Assistant also provides a Streamlit web interface through `app.py`.
+
+Make sure you are inside the `support_assistant` directory:
+
+```powershell
+cd support_assistant
+```
+
+Start the Streamlit application:
+
+```powershell
+streamlit run app.py
+```
+
+Streamlit will start a local web server and normally open the application in your browser.
+
+The application provides an interactive interface for asking questions about:
+
+- Zepto delivery
+- Refunds
+- Cancellations
+- Gift cards
+- Support policies
+
+The Streamlit frontend communicates with the Support Assistant logic and presents the generated responses in a user-friendly chat interface.
+
+### Streamlit application entry point
+
+```text
+support_assistant/app.py
+```
+
+The application uses Streamlit features such as:
+
+```text
+st.set_page_config()
+st.title()
+st.caption()
+st.chat_input()
+st.chat_message()
+st.session_state
+st.cache_resource()
+```
+
+`st.session_state` is used to maintain conversation-related state during Streamlit reruns, while `st.cache_resource()` is used to avoid repeatedly loading the assistant resource.
+
+---
+
+# 9. Test the FastAPI Backend
 
 Use:
 
@@ -422,9 +537,11 @@ sources
 confidence
 ```
 
+The Streamlit interface provides a more convenient conversational interface for interacting with the same Support Assistant functionality.
+
 ---
 
-# 5. Support Assistant Workflow
+# 10. Support Assistant Workflow
 
 The Support Assistant uses a LangGraph workflow to process incoming questions.
 
@@ -434,14 +551,18 @@ The general flow is:
 User Query
     |
     v
+Streamlit UI / FastAPI
+    |
+    v
 classify_intent
     |
     +----------------------+
     |                      |
-policy_question       general_question
+    v                      v
+policy_question      general_question
     |                      |
     v                      v
-retrieve_and_answer    direct_answer
+retrieve_and_answer   direct_answer
     |                      |
     +----------+-----------+
                |
@@ -455,7 +576,7 @@ The application returns a structured response containing an answer, source infor
 
 ---
 
-# 6. Docker
+# 11. Docker
 
 The Support Assistant also includes a Dockerfile for containerized execution.
 
@@ -483,18 +604,36 @@ Swagger documentation:
 http://localhost:7860/docs
 ```
 
+## Streamlit with Docker
+
+If the Docker image is configured to run the Streamlit frontend, the application can be exposed through the Streamlit port.
+
+For example:
+
+```powershell
+docker run --rm -p 8501:8501 zepto-support-assistant
+```
+
+The Streamlit application can then be accessed through:
+
+```text
+http://localhost:8501
+```
+
+The exact Docker command depends on the command configured in the `Dockerfile`.
+
 ---
 
-# 7. Git Workflow
+# 12. Git Workflow
 
 The project is maintained as a single GitHub repository containing all three modules.
 
 The Git workflow includes:
 
-* `main` branch
-* Feature branch development
-* Multiple commits on the feature branch
-* Merge of the feature branch back into `main`
+- `main` branch
+- Feature branch development
+- Multiple commits on the feature branch
+- Merge of the feature branch back into `main`
 
 The project history can be inspected using:
 
@@ -506,7 +645,7 @@ The actual project history includes the feature branch and merge commits used du
 
 ---
 
-# 8. Repository Requirements
+# 13. Repository Requirements
 
 This project is submitted as one public GitHub repository.
 
@@ -521,9 +660,18 @@ README.md
 
 The three modules are independently structured but are part of one connected Zepto Data & AI Platform capstone project.
 
+The Support Assistant includes both:
+
+```text
+FastAPI backend
+Streamlit frontend
+```
+
+providing both API-based and browser-based interaction.
+
 ---
 
-# 9. Summary of Design Decisions
+# 14. Summary of Design Decisions
 
 ## Data Pipeline
 
@@ -535,18 +683,27 @@ The Titanic dataset is used to demonstrate the complete data-science lifecycle f
 
 ## Support Assistant
 
-The Support Assistant uses document retrieval and a LangGraph workflow to provide grounded answers to policy questions. ChromaDB is used for vector storage, Sentence Transformers are used for embeddings, and FastAPI exposes the assistant as an API. Mock mode allows deterministic offline execution for evaluation.
+The Support Assistant uses document retrieval and a LangGraph workflow to provide grounded answers to policy questions. ChromaDB is used for vector storage, Sentence Transformers are used for embeddings, and FastAPI exposes the assistant as an API.
+
+A Streamlit frontend provides an interactive chat-based user interface for the Support Assistant.
+
+Mock mode allows deterministic offline execution for evaluation.
+
+Docker support allows the application to be packaged and run as a container.
 
 ---
 
-# 10. Capstone Submission
+# 15. Capstone Submission
 
 This repository represents the complete Zepto Data & AI Platform capstone submission.
 
 It contains:
 
-* A data-engineering pipeline
-* An analytics and machine-learning pipeline
-* A grounded GenAI support assistant
-* Documentation for setup and execution
-* Git-based feature development and merge history
+- A data-engineering pipeline
+- An analytics and machine-learning pipeline
+- A grounded GenAI support assistant
+- A FastAPI backend
+- A Streamlit frontend
+- Docker configuration for containerized execution
+- Documentation for setup and execution
+- Git-based feature development and merge history
